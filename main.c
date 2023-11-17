@@ -1,12 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct Node {
   int value;
   struct Node* left;
   struct Node* right;
 } Node;
+
+typedef struct Trunk {
+  char* str;
+  struct Trunk* prev;
+} Trunk;
 
 int max(int a, int b);
 bool node_exists(Node* root, int value);
@@ -15,9 +21,9 @@ int find_min_rec(Node* root);
 int find_max(Node* root);
 int find_height(Node* root);
 void print_inorder(Node* root);
-void print_tree_rec(Node* root, int numtabs);
+void print_tree_rec(Node* root, Trunk* prev, bool is_left);
 void print_tree(Node* root);
-// void print_tabs(int numtabs);
+void show_trunks(Trunk* trunk);
 void free_tree(Node* root);
 
 Node* create_node(int value) {
@@ -35,7 +41,7 @@ Node* insert_node(Node* node, int value) {
   if (node == NULL) return create_node(value);
 
   // Traverse the tree to find the right place to insert the node
-  if (value < node->value) {
+  if (value <= node->value) {
     node->left = insert_node(node->left, value);
   } else {
     node->right = insert_node(node->right, value);
@@ -79,6 +85,15 @@ Node* delete_node(Node* root, int value) {
   }
 
   return root;
+}
+
+Trunk* create_trunk(Trunk* prev) {
+  Trunk* new_trunk = malloc(sizeof(Trunk));
+  if (new_trunk != NULL) {
+    new_trunk->str = "";
+    new_trunk->prev = prev;
+  }
+  return new_trunk;
 }
 
 int main() {
@@ -207,38 +222,66 @@ int find_height(Node* root) {
 void print_inorder(Node* root) {
   if (root == NULL) return; 
   print_inorder(root->left);
-  printf("%d -> ", root->value);
+  printf(" %d ->", root->value);
   print_inorder(root->right);
 }
 
-void print_tree_rec(Node* root, int space) {
+void show_trunks(Trunk* trunk) {
+  if (trunk == NULL) return;
+  show_trunks(trunk->prev);
+  printf("%s", trunk->str);
+}
+
+void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
   if (root == NULL) return;
 
-  // Increase distance between levels
-  space += 10;
+  char* prev_str = "    ";
+  Trunk* trunk = create_trunk(prev);
+  trunk->str = prev_str;
 
-  // Process right child first
-  print_tree_rec(root->right, space);
+  print_tree_rec(root->right, trunk, 0);
 
-  // Print current node after space count
-  printf("\n");
-  for (int i = 10; i < space; i++)
-      printf(" ");
-  printf("%d\n", root->value);
+  if (prev == NULL) {
+    trunk->str = "----";
+  } else if (is_left) {
+    trunk->str = "`----";
+    prev_str = "   |";
+  } else {
+    trunk->str = ".----";
+    prev->str = prev_str;
+  }
 
-  // Process left child
-  print_tree_rec(root->left, space);
+  show_trunks(trunk);
+  printf(" %d\n", root->value);
+
+  if (prev != NULL) {
+    prev->str = prev_str;
+  }
+  trunk->str = "   |";
+  print_tree_rec(root->left, trunk, 1);
 }
+// void print_tree_rec(Node* root, int space) {
+//   if (root == NULL) return;
+
+//   // Increase distance between levels
+//   space += 10;
+
+//   // Process right child first
+//   print_tree_rec(root->right, space);
+
+//   // Print current node after space count
+//   printf("\n");
+//   for (int i = 10; i < space; i++)
+//       printf("-");
+//   printf("%d\n", root->value);
+
+//   // Process left child
+//   print_tree_rec(root->left, space);
+// }
 
 void print_tree(Node* root) {
-  print_tree_rec(root, 0);
+  print_tree_rec(root, NULL, 0);
 }
-
-// void print_tabs(int numtabs) {
-//   for (int i=0; i < numtabs; i++) {
-//     printf("\t");
-//   }
-// }
 
 void free_tree(Node* root) {
   // Deallocates memory for every node in the tree
