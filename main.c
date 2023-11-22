@@ -25,6 +25,7 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left);
 void print_tree(Node* root);
 void show_trunks(Trunk* trunk);
 void free_tree(Node* root);
+void free_trunk(Trunk* prev);
 
 Node* create_node(int value) {
   Node* new_node = malloc(sizeof(Node));
@@ -242,13 +243,13 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
   print_tree_rec(root->right, trunk, 0);
 
   if (prev == NULL) {
-    trunk->str = "----";
+    trunk->str = "---";
   } else if (is_left) {
-    trunk->str = "`----";
-    prev_str = "   |";
-  } else {
-    trunk->str = ".----";
+    trunk->str = "`---";
     prev->str = prev_str;
+  } else {
+    trunk->str = ".---";
+    prev_str = "   |";
   }
 
   show_trunks(trunk);
@@ -280,7 +281,9 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
 // }
 
 void print_tree(Node* root) {
-  print_tree_rec(root, NULL, 0);
+  Trunk *root_trunk = NULL;
+  print_tree_rec(root, root_trunk, 0);
+  free_trunk(root_trunk);
 }
 
 void free_tree(Node* root) {
@@ -290,6 +293,17 @@ void free_tree(Node* root) {
   free_tree(temp->left);
   free_tree(temp->right);
   if (temp->left == NULL && temp->right == NULL) {
+    free(temp);
+    return;
+  }
+}
+
+void free_trunk(Trunk* root_trunk) {
+  // Deallocates memory for every trunk for printing
+  Trunk* temp = root_trunk;
+  if (temp == NULL) return;
+  free_trunk(temp->prev);
+  if (temp->prev == NULL) {
     free(temp);
     return;
   }
