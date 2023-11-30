@@ -25,10 +25,10 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left);
 void print_tree(Node* root);
 void show_trunks(Trunk* trunk);
 void free_tree(Node* root);
-void free_trunk(Trunk* prev);
+void free_trunk(Trunk* root);
 
 Node* create_node(int value) {
-  Node* new_node = malloc(sizeof(Node));
+  Node* new_node = malloc(sizeof(struct Node));
   if (new_node != NULL) {
     new_node->left = NULL;
     new_node->right = NULL;
@@ -106,8 +106,10 @@ int main() {
   root = insert_node(root, 6);
   root = insert_node(root, 17);
   root = insert_node(root, 7);
+  root = insert_node(root, 32);
   root = insert_node(root, 10);
   root = insert_node(root, 14);
+  root = insert_node(root, 27);
   root = insert_node(root, 4);
 
   printf("Traverse and Print Tree in order:\n");
@@ -149,7 +151,7 @@ int main() {
   root = delete_node(root, 10);
   print_inorder(root);
 
-  printf("\nPrint the Tree in a really gross way:\n");
+  printf("\nPrint the Tree in a prettier way:\n");
   print_tree(root);
 
   Node *other_root = NULL;
@@ -245,15 +247,15 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
   if (prev == NULL) {
     trunk->str = "---";
   } else if (is_left) {
-    trunk->str = "`---";
+    trunk->str = "`--";
     prev->str = prev_str;
   } else {
-    trunk->str = ".---";
+    trunk->str = ".--";
     prev_str = "   |";
   }
 
   show_trunks(trunk);
-  printf(" %d\n", root->value);
+  printf("%d\n", root->value);
 
   if (prev != NULL) {
     prev->str = prev_str;
@@ -261,24 +263,6 @@ void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
   trunk->str = "   |";
   print_tree_rec(root->left, trunk, 1);
 }
-// void print_tree_rec(Node* root, int space) {
-//   if (root == NULL) return;
-
-//   // Increase distance between levels
-//   space += 10;
-
-//   // Process right child first
-//   print_tree_rec(root->right, space);
-
-//   // Print current node after space count
-//   printf("\n");
-//   for (int i = 10; i < space; i++)
-//       printf("-");
-//   printf("%d\n", root->value);
-
-//   // Process left child
-//   print_tree_rec(root->left, space);
-// }
 
 void print_tree(Node* root) {
   Trunk *root_trunk = NULL;
@@ -288,24 +272,24 @@ void print_tree(Node* root) {
 
 void free_tree(Node* root) {
   // Deallocates memory for every node in the tree
-  Node* temp = root;
-  if (temp == NULL) return;
-  free_tree(temp->left);
-  free_tree(temp->right);
-  if (temp->left == NULL && temp->right == NULL) {
-    free(temp);
-    return;
-  }
+  if (root == NULL) return;
+  free_tree(root->left);
+  free_tree(root->right);
+  free(root);
 }
 
-void free_trunk(Trunk* root_trunk) {
+void free_trunk(Trunk* root) {
   // Deallocates memory for every trunk for printing
-  Trunk* temp = root_trunk;
-  if (temp == NULL) return;
-  free_trunk(temp->prev);
-  if (temp->prev == NULL) {
+  // if (root == NULL) return;
+  // free_trunk(trunk->prev);
+  // free(trunk);
+  Trunk* temp;
+  printf("\nOutside loop - current root: %lu\n", (unsigned long) root);
+  while(root != NULL) {
+  printf("removing \"%s\" at %lu\n", root->str, (unsigned long) root);
+    temp = root;
+    root = root->prev;
     free(temp);
-    return;
   }
 }
 
