@@ -9,10 +9,10 @@ typedef struct Node {
   struct Node* right;
 } Node;
 
-typedef struct Trunk {
+typedef struct Edge {
   char* str;
-  struct Trunk* prev;
-} Trunk;
+  struct Edge* prev;
+} Edge;
 
 int max(int a, int b);
 bool node_exists(Node* root, int value);
@@ -21,11 +21,9 @@ int find_min_rec(Node* root);
 int find_max(Node* root);
 int find_height(Node* root);
 void print_inorder(Node* root);
-void print_tree_rec(Node* root, Trunk* prev, bool is_left);
-void print_tree(Node* root);
-void show_trunks(Trunk* trunk);
+void print_tree(Node* root, Edge* prev, bool is_left);
+void plot_edges(Edge* edge);
 void free_tree(Node* root);
-void free_trunk(Trunk* root);
 
 Node* create_node(int value) {
   Node* new_node = malloc(sizeof(struct Node));
@@ -88,13 +86,13 @@ Node* delete_node(Node* root, int value) {
   return root;
 }
 
-Trunk* create_trunk(Trunk* prev) {
-  Trunk* new_trunk = malloc(sizeof(Trunk));
-  if (new_trunk != NULL) {
-    new_trunk->str = "";
-    new_trunk->prev = prev;
+Edge* create_edge(Edge* prev) {
+  Edge* new_edge = malloc(sizeof(Edge));
+  if (new_edge != NULL) {
+    new_edge->str = "";
+    new_edge->prev = prev;
   }
-  return new_trunk;
+  return new_edge;
 }
 
 int main() {
@@ -151,8 +149,8 @@ int main() {
   root = delete_node(root, 10);
   print_inorder(root);
 
-  printf("\nPrint the Tree in a prettier way:\n");
-  print_tree(root);
+  printf("\nPrint the Tree in a prettier way:\n\n");
+  print_tree(root, NULL, 0);
 
   Node *other_root = NULL;
   printf("\nFind the Tree Height with NULL root: ");
@@ -229,45 +227,40 @@ void print_inorder(Node* root) {
   print_inorder(root->right);
 }
 
-void show_trunks(Trunk* trunk) {
-  if (trunk == NULL) return;
-  show_trunks(trunk->prev);
-  printf("%s", trunk->str);
+void plot_edges(Edge* edge) {
+  if (edge == NULL) return;
+  plot_edges(edge->prev);
+  printf("%s", edge->str);
 }
 
-void print_tree_rec(Node* root, Trunk* prev, bool is_left) {
+void print_tree(Node* root, Edge* prev, bool is_left) {
   if (root == NULL) return;
 
   char* prev_str = "    ";
-  Trunk* trunk = create_trunk(prev);
-  trunk->str = prev_str;
+  Edge* edge = create_edge(prev);
+  edge->str = prev_str;
 
-  print_tree_rec(root->right, trunk, 0);
+  print_tree(root->right, edge, 0);
 
   if (prev == NULL) {
-    trunk->str = "---";
+    edge->str = "---";
   } else if (is_left) {
-    trunk->str = "`--";
+    edge->str = "`--";
     prev->str = prev_str;
   } else {
-    trunk->str = ".--";
+    edge->str = ".--";
     prev_str = "   |";
   }
 
-  show_trunks(trunk);
+  plot_edges(edge);
   printf("%d\n", root->value);
 
   if (prev != NULL) {
     prev->str = prev_str;
   }
-  trunk->str = "   |";
-  print_tree_rec(root->left, trunk, 1);
-}
-
-void print_tree(Node* root) {
-  Trunk *root_trunk = NULL;
-  print_tree_rec(root, root_trunk, 0);
-  free_trunk(root_trunk);
+  edge->str = "   |";
+  print_tree(root->left, edge, 1);
+  free(edge);
 }
 
 void free_tree(Node* root) {
@@ -276,21 +269,6 @@ void free_tree(Node* root) {
   free_tree(root->left);
   free_tree(root->right);
   free(root);
-}
-
-void free_trunk(Trunk* root) {
-  // Deallocates memory for every trunk for printing
-  // if (root == NULL) return;
-  // free_trunk(trunk->prev);
-  // free(trunk);
-  Trunk* temp;
-  printf("\nOutside loop - current root: %lu\n", (unsigned long) root);
-  while(root != NULL) {
-  printf("removing \"%s\" at %lu\n", root->str, (unsigned long) root);
-    temp = root;
-    root = root->prev;
-    free(temp);
-  }
 }
 
 int max(int a, int b) {
